@@ -49,14 +49,14 @@ export interface FormData {
 export interface WebhookResponse {
   [0]?: {
     output?: {
-      core_features?: Array<{name: string, benefit: string}>;
+      core_features?: Array<{name?: string, benefit?: string}>;
       objective?: string;
       technical_stack?: {
         frontend?: string;
         backend?: string;
         integrations?: string[];
       };
-      timeline?: Array<{phase: string, activities: string[]}>;
+      timeline?: Array<{phase?: string, activities?: string[]}>;
       target_audience?: {
         segments?: string[];
         pain_points?: string[];
