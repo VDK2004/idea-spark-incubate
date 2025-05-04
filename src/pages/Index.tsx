@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Country, Niche, BusinessIdea, FormData } from "../utils/types";
+import { Country, Niche, BusinessIdea, FormData, WebhookResponse } from "../utils/types";
 import CountryDropdown from "../components/CountryDropdown";
 import NicheDropdown from "../components/NicheDropdown";
 import AdvancedLoadingState from "../components/AdvancedLoadingState";
@@ -31,6 +31,73 @@ const Index: React.FC = () => {
 
   const handleSelectNiche = (niche: Niche) => {
     setFormData({ ...formData, niche });
+  };
+
+  // Process the webhook response into our BusinessIdea format
+  const processWebhookResponse = (data: any): BusinessIdea => {
+    if (!Array.isArray(data) || data.length < 3) {
+      throw new Error("Unexpected response format from API");
+    }
+
+    // Safely extract data from response with fallbacks
+    const core = data[0]?.output || {};
+    const business = data[1]?.output || {};
+    const branding = data[2]?.output || {};
+
+    // Transform API response to BusinessIdea format
+    return {
+      name: branding?.naam || "Unnamed Business",
+      slogan: branding?.slogan || "No slogan available",
+      positioning: branding?.positionering || branding?.merkgevoel || "No positioning available",
+      goal: business?.summary || core?.objective || "No goal available",
+      
+      // Transform core_features to our features format with safe fallbacks
+      features: Array.isArray(core?.core_features) 
+        ? core.core_features.map((feature: any) => ({
+            title: feature.name || "Unnamed Feature",
+            description: feature.benefit || "No description available"
+          }))
+        : [],
+      
+      // Safe handling of target audience
+      targetAudience: {
+        segments: Array.isArray(core?.target_audience?.segments) 
+          ? core.target_audience.segments 
+          : [],
+        painPoints: Array.isArray(core?.target_audience?.pain_points) 
+          ? core.target_audience.pain_points 
+          : []
+      },
+      
+      // Convert business model information
+      businessModel: [
+        ...(business?.revenue_streams ? Object.entries(business.revenue_streams).map(([type, details]) => ({ 
+          type, 
+          details: details as string 
+        })) : []),
+        ...(business?.cost_structure ? Object.entries(business.cost_structure).map(([type, details]) => ({ 
+          type, 
+          details: details as string 
+        })) : [])
+      ],
+      
+      // Technical stack with safe fallbacks
+      technicalStack: {
+        frontend: core?.technical_stack?.frontend || "Not specified",
+        backend: core?.technical_stack?.backend || "Not specified",
+        integrations: Array.isArray(core?.technical_stack?.integrations) 
+          ? core.technical_stack.integrations 
+          : []
+      },
+      
+      // Timeline/roadmap with safe handling
+      roadmap: Array.isArray(core?.timeline) 
+        ? core.timeline.map((phase: any) => ({
+            timeframe: phase.phase || "Unknown phase",
+            tasks: Array.isArray(phase.activities) ? phase.activities : []
+          }))
+        : []
+    };
   };
 
   const fetchBusinessIdea = async (isRetry = false) => {
@@ -73,11 +140,18 @@ const Index: React.FC = () => {
       console.log("Response received:", data);
       
       if (data) {
-        setBusinessIdea(data);
-        toast({
-          title: "Succes!",
-          description: "Je business idee is gegenereerd.",
-        });
+        // Process the data safely
+        try {
+          const processedData = processWebhookResponse(data);
+          setBusinessIdea(processedData);
+          toast({
+            title: "Succes!",
+            description: "Je business idee is gegenereerd.",
+          });
+        } catch (processingError) {
+          console.error("Error processing data:", processingError);
+          throw new Error("Onverwacht formaat ontvangen van API");
+        }
       } else {
         throw new Error("Unexpected response format");
       }
@@ -105,6 +179,8 @@ const Index: React.FC = () => {
         errorMessage = "Netwerkfout. Controleer je internetverbinding en probeer het opnieuw.";
       } else if (error.message.includes("CORS")) {
         errorMessage = "CORS-fout bij het benaderen van de server. Probeer het later opnieuw.";
+      } else if (error.message.includes("Onverwacht formaat")) {
+        errorMessage = "De server stuurde een onverwacht antwoord. Probeer het later opnieuw.";
       }
       
       setError(errorMessage);

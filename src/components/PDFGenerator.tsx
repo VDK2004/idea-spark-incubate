@@ -12,34 +12,50 @@ const PDFGenerator = () => {
       // In a real app, this would use a library like jsPDF or react-pdf
       // For now, we'll simulate downloading by creating a text file with the business idea
       const content = `
-      # ${businessIdea.name}
-      ## ${businessIdea.slogan}
+      # ${businessIdea.name || "Unnamed Business"}
+      ## ${businessIdea.slogan || "No slogan available"}
       
-      **Positioning:** ${businessIdea.positioning}
+      **Positioning:** ${businessIdea.positioning || "No positioning defined"}
       
       ## Doel
-      ${businessIdea.goal}
+      ${businessIdea.goal || "No goal defined"}
       
       ## Features
-      ${businessIdea.features.map(f => `* **${f.title}:** ${f.description}`).join('\n')}
+      ${businessIdea.features && businessIdea.features.length > 0 
+        ? businessIdea.features.map(f => `* **${f.title || "Feature"}:** ${f.description || "No description"}`).join('\n')
+        : "Geen features beschikbaar."}
       
       ## Doelgroep
       ### Segmenten: 
-      ${businessIdea.targetAudience.segments.map(s => `* ${s}`).join('\n')}
+      ${businessIdea.targetAudience?.segments && businessIdea.targetAudience.segments.length > 0
+        ? businessIdea.targetAudience.segments.map(s => `* ${s || "Segment"}`).join('\n')
+        : "Geen doelgroepsegmenten beschikbaar."}
       
       ### Pijnpunten: 
-      ${businessIdea.targetAudience.painPoints.map(p => `* ${p}`).join('\n')}
+      ${businessIdea.targetAudience?.painPoints && businessIdea.targetAudience.painPoints.length > 0
+        ? businessIdea.targetAudience.painPoints.map(p => `* ${p || "Pijnpunt"}`).join('\n')
+        : "Geen pijnpunten gedefinieerd."}
       
       ## Businessmodel
-      ${businessIdea.businessModel.map(m => `* **${m.type}:** ${m.details}`).join('\n')}
+      ${businessIdea.businessModel && businessIdea.businessModel.length > 0
+        ? businessIdea.businessModel.map(m => `* **${m.type || "Type"}:** ${m.details || "No details"}`).join('\n')
+        : "Geen businessmodel beschikbaar."}
       
       ## Technical Stack
-      * **Frontend:** ${businessIdea.technicalStack.frontend}
-      * **Backend:** ${businessIdea.technicalStack.backend}
-      * **Integraties:** ${businessIdea.technicalStack.integrations.join(', ')}
+      * **Frontend:** ${businessIdea.technicalStack?.frontend || "Niet gespecificeerd"}
+      * **Backend:** ${businessIdea.technicalStack?.backend || "Niet gespecificeerd"}
+      * **Integraties:** ${businessIdea.technicalStack?.integrations && businessIdea.technicalStack.integrations.length > 0
+        ? businessIdea.technicalStack.integrations.join(', ')
+        : "Geen integraties gespecificeerd"}
       
       ## Roadmap
-      ${businessIdea.roadmap.map(r => `### ${r.timeframe}\n${r.tasks.map(t => `* ${t}`).join('\n')}`).join('\n\n')}
+      ${businessIdea.roadmap && businessIdea.roadmap.length > 0
+        ? businessIdea.roadmap.map(r => `### ${r.timeframe || "Phase"}\n${
+            r.tasks && r.tasks.length > 0
+              ? r.tasks.map(t => `* ${t || "Task"}`).join('\n')
+              : "Geen taken gespecificeerd"
+          }`).join('\n\n')
+        : "Geen roadmap beschikbaar."}
       
       ---
       Gegenereerd door IdeaIncy | ${new Date().toLocaleDateString()}
@@ -51,7 +67,7 @@ const PDFGenerator = () => {
         type: 'text/plain'
       });
       element.href = URL.createObjectURL(file);
-      element.download = `${businessIdea.name.replace(/\s+/g, '_')}_BusinessPlan.txt`;
+      element.download = `${businessIdea.name ? businessIdea.name.replace(/\s+/g, '_') : "Business_Idea"}_BusinessPlan.txt`;
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
