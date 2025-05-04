@@ -1,64 +1,72 @@
 
-import { Country, Niche } from "./types";
+import { Country, Niche, BusinessIdea } from "./types";
 
-// A selection of countries with their flags
+// Countries with flags
 export const countries: Country[] = [
   { name: "Nederland", code: "NL", flag: "🇳🇱" },
   { name: "België", code: "BE", flag: "🇧🇪" },
   { name: "Duitsland", code: "DE", flag: "🇩🇪" },
   { name: "Frankrijk", code: "FR", flag: "🇫🇷" },
   { name: "Verenigd Koninkrijk", code: "GB", flag: "🇬🇧" },
+  { name: "Spanje", code: "ES", flag: "🇪🇸" },
+  { name: "Italië", code: "IT", flag: "🇮🇹" },
   { name: "Verenigde Staten", code: "US", flag: "🇺🇸" },
   { name: "Canada", code: "CA", flag: "🇨🇦" },
   { name: "Australië", code: "AU", flag: "🇦🇺" },
-  { name: "Nieuw-Zeeland", code: "NZ", flag: "🇳🇿" },
   { name: "Japan", code: "JP", flag: "🇯🇵" },
   { name: "China", code: "CN", flag: "🇨🇳" },
   { name: "India", code: "IN", flag: "🇮🇳" },
   { name: "Brazilië", code: "BR", flag: "🇧🇷" },
   { name: "Zuid-Afrika", code: "ZA", flag: "🇿🇦" },
-  { name: "Spanje", code: "ES", flag: "🇪🇸" },
-  { name: "Italië", code: "IT", flag: "🇮🇹" },
-  { name: "Portugal", code: "PT", flag: "🇵🇹" },
   { name: "Zweden", code: "SE", flag: "🇸🇪" },
   { name: "Noorwegen", code: "NO", flag: "🇳🇴" },
   { name: "Denemarken", code: "DK", flag: "🇩🇰" },
-  { name: "Finland", code: "FI", flag: "🇫🇮" },
   { name: "Polen", code: "PL", flag: "🇵🇱" },
   { name: "Oostenrijk", code: "AT", flag: "🇦🇹" },
-  { name: "Zwitserland", code: "CH", flag: "🇨🇭" },
-  { name: "Griekenland", code: "GR", flag: "🇬🇷" },
-  { name: "Singapore", code: "SG", flag: "🇸🇬" },
-  { name: "Zuid-Korea", code: "KR", flag: "🇰🇷" },
-  { name: "Verenigde Arabische Emiraten", code: "AE", flag: "🇦🇪" },
-  { name: "Israël", code: "IL", flag: "🇮🇱" },
-  { name: "Turkije", code: "TR", flag: "🇹🇷" },
 ];
 
-// List of niches
+// Niches
 export const niches: Niche[] = [
   { id: "ai", name: "Artificial Intelligence" },
-  { id: "energy", name: "Energie" },
   { id: "fintech", name: "FinTech" },
-  { id: "healthcare", name: "Gezondheidszorg" },
-  { id: "mobility", name: "Mobiliteit" },
   { id: "sustainability", name: "Duurzaamheid" },
-  { id: "edtech", name: "Educatie Tech" },
-  { id: "proptech", name: "Real Estate Tech" },
-  { id: "agritech", name: "Agrarische Tech" },
-  { id: "retail", name: "Retail & E-commerce" },
-  { id: "logistics", name: "Logistiek & Supply Chain" },
-  { id: "foodtech", name: "Food Tech" },
+  { id: "health", name: "Gezondheid & Welzijn" },
+  { id: "energy", name: "Energie" },
+  { id: "mobility", name: "Mobiliteit" },
+  { id: "logistics", name: "Logistiek" },
+  { id: "education", name: "Educatie" },
+  { id: "ecommerce", name: "E-commerce" },
+  { id: "manufacturing", name: "Productie" },
+  { id: "food", name: "Voeding & Landbouw" },
+  { id: "realestate", name: "Vastgoed" },
   { id: "entertainment", name: "Entertainment & Media" },
+  { id: "tourism", name: "Toerisme & Hospitality" },
+  { id: "construction", name: "Bouw & Architectuur" },
   { id: "cybersecurity", name: "Cybersecurity" },
+  { id: "retail", name: "Retail" },
   { id: "biotech", name: "Biotechnologie" },
-  { id: "manufacturing", name: "Smart Manufacturing" },
-  { id: "saas", name: "SaaS" },
-  { id: "socialimpact", name: "Social Impact" },
+  { id: "blockchain", name: "Blockchain & Web3" },
+  { id: "sharing", name: "Deeleconomie" },
 ];
 
+// API endpoint
 export const API_URL = "https://kaiser1457.app.n8n.cloud/webhook/d8414532-8909-4f54-8d09-2836ffa835cc";
 
+// Loading messages
+export const loadingMessages = [
+  "AI-experts overleggen...",
+  "Trendanalyse wordt uitgevoerd...",
+  "ESG-vereisten worden geverifieerd...",
+  "Businessmodel wordt opgesteld...",
+  "Marktpotentieel wordt ingeschat...",
+  "Naam en branding worden gegenereerd...",
+  "Concurrentieanalyse wordt uitgevoerd...",
+  "Revenue streams worden ontwikkeld...",
+  "MVP-requirements worden opgesteld...",
+  "Tech stack wordt samengesteld..."
+];
+
+// Mock business idea for demo/testing
 export const mockBusinessIdea: BusinessIdea = {
   name: "VoltCycle",
   slogan: "Powering the future, twice.",
@@ -79,24 +87,56 @@ export const mockBusinessIdea: BusinessIdea = {
     }
   ],
   targetAudience: {
-    segments: ["EV-producenten", "Defensiecontractoren", "Overheidsinstanties"],
-    painPoints: ["Hoge grondstofkosten", "Onduidelijke wetgeving", "Gebrek aan transparantie"]
+    segments: [
+      "EV-producenten",
+      "Defensiecontractoren",
+      "Overheidsinstanties"
+    ],
+    painPoints: [
+      "Hoge grondstofkosten",
+      "Onduidelijke wetgeving",
+      "Gebrek aan transparantie"
+    ]
   },
   businessModel: [
-    { type: "Abonnement", details: "€5k/maand" },
-    { type: "Verkoop gerecycleerde materialen", details: "30% goedkoper dan nieuw" },
-    { type: "Carbon credits", details: "€50/ton CO₂" },
-    { type: "Licensing aan OEMs", details: "" }
+    {
+      type: "Abonnement",
+      details: "€5k/maand"
+    },
+    {
+      type: "Verkoop gerecycleerde materialen",
+      details: "30% goedkoper dan nieuw"
+    },
+    {
+      type: "Carbon credits",
+      details: "€50/ton CO₂"
+    },
+    {
+      type: "Licensing aan OEMs",
+      details: "Royalty-based model"
+    }
   ],
   technicalStack: {
     frontend: "React.js + MUI",
     backend: "Node.js + Express",
-    integrations: ["Stripe"]
+    integrations: ["Stripe", "AWS", "Carbon Analytics API"]
   },
   roadmap: [
-    { timeframe: "Week 1-2", tasks: ["API-integratie", "Datamodel"] },
-    { timeframe: "Week 3-5", tasks: ["UI dashboard", "Marktplaats", "Rapportage"] },
-    { timeframe: "Week 6", tasks: ["Bugfixing", "Pilot"] },
-    { timeframe: "Week 7-8", tasks: ["AWS launch", "Onboarding van eerste klanten"] }
+    {
+      timeframe: "Week 1–2",
+      tasks: ["API-integratie", "Datamodel ontwikkeling"]
+    },
+    {
+      timeframe: "Week 3–5",
+      tasks: ["UI dashboard", "Marktplaats implementatie", "Rapportage module"]
+    },
+    {
+      timeframe: "Week 6",
+      tasks: ["Bugfixing", "Pilot lancering"]
+    },
+    {
+      timeframe: "Week 7–8",
+      tasks: ["AWS launch", "Onboarding eerste klanten"]
+    }
   ]
 };

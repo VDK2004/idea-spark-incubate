@@ -1,13 +1,14 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Country, Niche, BusinessIdea, FormData } from "../utils/types";
 import CountryDropdown from "../components/CountryDropdown";
 import NicheDropdown from "../components/NicheDropdown";
-import LoadingState from "../components/LoadingState";
+import AdvancedLoadingState from "../components/AdvancedLoadingState";
 import BusinessStarterPack from "../components/BusinessStarterPack";
 import PDFGenerator from "../components/PDFGenerator";
-import { API_URL, mockBusinessIdea } from "../utils/constants";
+import { API_URL, mockBusinessIdea, loadingMessages } from "../utils/constants";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
 
 const Index: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
@@ -50,25 +51,26 @@ const Index: React.FC = () => {
         nicheId: formData.niche.id
       };
 
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      console.log("Sending request to webhook:", payload);
+      
+      // Using axios with increased timeout (5 minutes)
+      const response = await axios({
+        method: 'post',
+        url: API_URL,
+        data: payload,
+        timeout: 300000 // 5 minutes in milliseconds
       });
 
-      if (!response.ok) {
-        throw new Error("Something went wrong with the API call");
-      }
-
-      // Parse the response
-      const data = await response.json();
+      console.log("Response received:", response.data);
       
-      // For production, we'd use the real response
-      // For demo purposes, we'll use the mock data
-      // setBusinessIdea(data);
-      setBusinessIdea(mockBusinessIdea);
+      // For production, use the real response
+      if (response.data) {
+        setBusinessIdea(response.data);
+      } else {
+        // Fallback to mock data if response structure is unexpected
+        console.warn("Using mock data due to unexpected response format");
+        setBusinessIdea(mockBusinessIdea);
+      }
 
       toast({
         title: "Succes!",
@@ -100,10 +102,18 @@ const Index: React.FC = () => {
     }
   };
 
+  const handleReset = () => {
+    setBusinessIdea(null);
+    setFormData({
+      country: null,
+      niche: null,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="mb-4 sm:mb-0">
@@ -118,6 +128,15 @@ const Index: React.FC = () => {
                 AI-gegenereerde business ideeën voor jouw volgende startup
               </p>
             </div>
+            
+            {businessIdea && (
+              <button
+                onClick={handleReset}
+                className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+              >
+                Nieuw idee genereren
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -181,7 +200,12 @@ const Index: React.FC = () => {
           </div>
         )}
 
-        {isLoading && <LoadingState />}
+        {isLoading && (
+          <AdvancedLoadingState 
+            messages={loadingMessages} 
+            countryName={formData.country?.name || ""} 
+          />
+        )}
 
         {businessIdea && !isLoading && (
           <BusinessStarterPack 
@@ -194,7 +218,7 @@ const Index: React.FC = () => {
       {/* Footer */}
       <footer className="mt-12 border-t border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500">
               &copy; {new Date().getFullYear()} IdeaIncy. Alle rechten voorbehouden.
             </p>
