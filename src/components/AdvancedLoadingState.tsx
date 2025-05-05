@@ -21,11 +21,13 @@ const AdvancedLoadingState: React.FC<AdvancedLoadingStateProps> = ({
   };
 
   useEffect(() => {
-    // Progress slowly increases over time
+    // Progress slowly increases over time, but ensures it doesn't complete within 3 minutes
     const progressInterval = setInterval(() => {
       setProgress(prev => {
+        // More gradually increment progress to reflect longer wait time
         // Cap at 95% to show we're still waiting for response
-        const newProgress = prev + 0.2;
+        const increment = elapsedTime < 180 ? 0.15 : 0.2; // Slower progress for first 3 minutes
+        const newProgress = prev + increment;
         return newProgress > 95 ? 95 : newProgress;
       });
       
@@ -63,7 +65,7 @@ const AdvancedLoadingState: React.FC<AdvancedLoadingStateProps> = ({
         {formatMessage(messages[currentMessageIndex])}
       </h3>
       
-      {/* Progress bar */}
+      {/* Progress bar - shows slower progress to reflect minimum 3-minute wait */}
       <div className="w-full max-w-md mb-6">
         <Progress value={progress} className="h-2" />
       </div>
@@ -107,6 +109,8 @@ const AdvancedLoadingState: React.FC<AdvancedLoadingStateProps> = ({
         ) : elapsedTime < 120 ? (
           "Even geduld, onze AI-agents werken hard..."
         ) : elapsedTime < 180 ? (
+          "We hebben minimaal 3 minuten nodig, bijna halfweg..."
+        ) : elapsedTime < 240 ? (
           "Bijna klaar, we ronden de laatste details af..."
         ) : (
           "Bedankt voor je geduld, de berekeningen duren langer dan verwacht..."
@@ -117,3 +121,4 @@ const AdvancedLoadingState: React.FC<AdvancedLoadingStateProps> = ({
 };
 
 export default AdvancedLoadingState;
+

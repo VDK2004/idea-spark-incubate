@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Country, Niche, BusinessIdea, FormData, WebhookResponse } from "../utils/types";
 import CountryDropdown from "../components/CountryDropdown";
@@ -108,8 +107,13 @@ const Index: React.FC = () => {
     setIsLoading(true);
     setError(null);
     
+    // Set timeout to minimum 3 minutes (180000 ms) but keep the existing 5min10s (310000 ms)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 310000); // 5m10s timeout
+    const timeoutDuration = 310000; // 5m10s timeout (over 3 minutes as requested)
+    const timeoutId = setTimeout(() => {
+      console.log(`Request timed out after ${timeoutDuration/1000} seconds`);
+      controller.abort();
+    }, timeoutDuration);
     
     try {
       const payload = {
@@ -120,6 +124,7 @@ const Index: React.FC = () => {
       };
 
       console.log(`${isRetry ? "Retry attempt: " : ""}Sending request to webhook:`, payload);
+      console.log(`Timeout set for ${timeoutDuration/1000} seconds`);
       
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -174,7 +179,7 @@ const Index: React.FC = () => {
       let errorMessage = "Er ging iets mis bij het ophalen van je idee.";
       
       if (error.name === "AbortError") {
-        errorMessage = "De aanvraag duurde te lang. Probeer het opnieuw.";
+        errorMessage = "De aanvraag duurde te lang (meer dan 5 minuten). Probeer het opnieuw.";
       } else if (error.message.includes("NetworkError") || error.message.includes("Failed to fetch")) {
         errorMessage = "Netwerkfout. Controleer je internetverbinding en probeer het opnieuw.";
       } else if (error.message.includes("CORS")) {

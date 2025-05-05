@@ -49,9 +49,10 @@ const LoadingState: React.FC = () => {
         </div>
       </div>
       
-      <p className="text-sm text-gray-500 mt-4">Dit kan tot 2 minuten duren...</p>
+      <p className="text-sm text-gray-500 mt-4">Dit kan tot 5 minuten duren...</p>
     </div>
   );
 };
 
 export default LoadingState;
+
