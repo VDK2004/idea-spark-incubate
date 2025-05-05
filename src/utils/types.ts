@@ -45,50 +45,41 @@ export interface FormData {
   niche: Niche | null;
 }
 
-// Interface for the raw API response structure - updated to match the new format
+// Interface for the raw API response structure
 export interface WebhookResponse {
-  data?: Array<{
+  [0]?: {
     output?: {
+      core_features?: Array<{name?: string, benefit?: string}>;
       objective?: string;
-      core_features?: Array<{
-        name?: string;
-        benefit?: string;
-      }>;
-      target_audience?: {
-        user_types?: string[];
-        pain_points?: string[];
-        early_adopter_reason?: string;
-      };
       technical_stack?: {
         frontend?: string;
         backend?: string;
-        database?: string;
-        hosting?: string;
         integrations?: string[];
-        justification?: string;
       };
-      timeline?: {
-        week_1_2?: string;
-        week_3_5?: string;
-        week_6?: string;
-        week_7_8?: string;
+      timeline?: Array<{phase?: string, activities?: string[]}>;
+      target_audience?: {
+        segments?: string[];
+        pain_points?: string[];
       };
+    }
+  };
+  [1]?: {
+    output?: {
       key_partners?: string[];
       key_activities?: string[];
       value_propositions?: string[];
-      customer_relationships?: string[];
-      customer_segments?: string[];
-      key_resources?: string[];
-      channels?: string[];
-      revenue_streams?: string[];
-      cost_structure?: string[];
+      cost_structure?: {[key: string]: string};
+      revenue_streams?: {[key: string]: string};
       summary?: string;
-      naam?: string;
-      positionering?: string;
-      slogan?: string;
-      merkgevoel?: string[] | string;
-      uitleg?: string;
     }
-  }>
+  };
+  [2]?: {
+    output?: {
+      naam?: string;
+      slogan?: string;
+      merkgevoel?: string;
+      uitleg?: string;
+      positionering?: string;
+    }
+  };
 }
-

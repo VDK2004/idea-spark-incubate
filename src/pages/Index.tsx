@@ -35,28 +35,25 @@ const Index: React.FC = () => {
 
   // Process the webhook response into our BusinessIdea format
   const processWebhookResponse = (data: any): BusinessIdea => {
-    if (!data || !data.data || !Array.isArray(data.data) || data.data.length === 0) {
+    if (!Array.isArray(data) || data.length < 3) {
       throw new Error("Unexpected response format from API");
     }
 
-    // Extract the data from the new response format
-    const responses = data.data;
-    
-    // Get the outputs from each response item
-    const firstOutput = responses[0]?.output || {};
-    const secondOutput = responses[1]?.output || {};
-    const thirdOutput = responses[2]?.output || {};
-    
+    // Safely extract data from response with fallbacks
+    const core = data[0]?.output || {};
+    const business = data[1]?.output || {};
+    const branding = data[2]?.output || {};
+
     // Transform API response to BusinessIdea format
     return {
-      name: thirdOutput?.naam || "Unnamed Business",
-      slogan: thirdOutput?.slogan || "No slogan available",
-      positioning: thirdOutput?.positionering || "No positioning available",
-      goal: firstOutput?.objective || secondOutput?.summary || "No goal available",
+      name: branding?.naam || "Unnamed Business",
+      slogan: branding?.slogan || "No slogan available",
+      positioning: branding?.positionering || branding?.merkgevoel || "No positioning available",
+      goal: business?.summary || core?.objective || "No goal available",
       
       // Transform core_features to our features format with safe fallbacks
-      features: Array.isArray(firstOutput?.core_features) 
-        ? firstOutput.core_features.map((feature: any) => ({
+      features: Array.isArray(core?.core_features) 
+        ? core.core_features.map((feature: any) => ({
             title: feature.name || "Unnamed Feature",
             description: feature.benefit || "No description available"
           }))
@@ -64,54 +61,42 @@ const Index: React.FC = () => {
       
       // Safe handling of target audience
       targetAudience: {
-        segments: Array.isArray(firstOutput?.target_audience?.user_types) 
-          ? firstOutput.target_audience.user_types 
+        segments: Array.isArray(core?.target_audience?.segments) 
+          ? core.target_audience.segments 
           : [],
-        painPoints: Array.isArray(firstOutput?.target_audience?.pain_points) 
-          ? firstOutput.target_audience.pain_points 
+        painPoints: Array.isArray(core?.target_audience?.pain_points) 
+          ? core.target_audience.pain_points 
           : []
       },
       
-      // Convert business model information from revenue_streams and cost_structure
+      // Convert business model information
       businessModel: [
-        ...(secondOutput?.revenue_streams ? secondOutput.revenue_streams.map((item: string, index: number) => ({ 
-          type: "Revenue Stream",
-          details: item
+        ...(business?.revenue_streams ? Object.entries(business.revenue_streams).map(([type, details]) => ({ 
+          type, 
+          details: details as string 
         })) : []),
-        ...(secondOutput?.cost_structure ? secondOutput.cost_structure.map((item: string, index: number) => ({ 
-          type: "Cost",
-          details: item
+        ...(business?.cost_structure ? Object.entries(business.cost_structure).map(([type, details]) => ({ 
+          type, 
+          details: details as string 
         })) : [])
       ],
       
       // Technical stack with safe fallbacks
       technicalStack: {
-        frontend: firstOutput?.technical_stack?.frontend || "Not specified",
-        backend: firstOutput?.technical_stack?.backend || "Not specified",
-        integrations: Array.isArray(firstOutput?.technical_stack?.integrations) 
-          ? firstOutput.technical_stack.integrations 
+        frontend: core?.technical_stack?.frontend || "Not specified",
+        backend: core?.technical_stack?.backend || "Not specified",
+        integrations: Array.isArray(core?.technical_stack?.integrations) 
+          ? core.technical_stack.integrations 
           : []
       },
       
-      // Create roadmap from timeline data
-      roadmap: [
-        {
-          timeframe: "Weeks 1-2",
-          tasks: firstOutput?.timeline?.week_1_2 ? [firstOutput.timeline.week_1_2] : []
-        },
-        {
-          timeframe: "Weeks 3-5",
-          tasks: firstOutput?.timeline?.week_3_5 ? [firstOutput.timeline.week_3_5] : []
-        },
-        {
-          timeframe: "Week 6",
-          tasks: firstOutput?.timeline?.week_6 ? [firstOutput.timeline.week_6] : []
-        },
-        {
-          timeframe: "Weeks 7-8",
-          tasks: firstOutput?.timeline?.week_7_8 ? [firstOutput.timeline.week_7_8] : []
-        }
-      ].filter(phase => phase.tasks.length > 0) // Only include phases that have tasks
+      // Timeline/roadmap with safe handling
+      roadmap: Array.isArray(core?.timeline) 
+        ? core.timeline.map((phase: any) => ({
+            timeframe: phase.phase || "Unknown phase",
+            tasks: Array.isArray(phase.activities) ? phase.activities : []
+          }))
+        : []
     };
   };
 
