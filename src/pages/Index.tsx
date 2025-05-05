@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Country, Niche, BusinessIdea, FormData, WebhookResponse } from "../utils/types";
 import CountryDropdown from "../components/CountryDropdown";
@@ -126,39 +127,99 @@ const Index: React.FC = () => {
       console.log(`${isRetry ? "Retry attempt: " : ""}Sending request to webhook:`, payload);
       console.log(`Timeout set for ${timeoutDuration/1000} seconds`);
       
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
+      // Try to use a CORS proxy if we're on the deployed site (not localhost)
+      let apiUrl = API_URL;
       
-      if (!response.ok) {
-        throw new Error(`Server responded with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Response received:", data);
-      
-      if (data) {
-        // Process the data safely
+      // Only on deployed sites (not local development)
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         try {
-          const processedData = processWebhookResponse(data);
-          setBusinessIdea(processedData);
-          toast({
-            title: "Succes!",
-            description: "Je business idee is gegenereerd.",
+          // First attempt using fetch with mode: 'cors' explicitly
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json'
+            },
+            mode: 'cors', // Explicitly request CORS
+            body: JSON.stringify(payload),
+            signal: controller.signal
           });
-        } catch (processingError) {
-          console.error("Error processing data:", processingError);
-          throw new Error("Onverwacht formaat ontvangen van API");
+          
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            throw new Error(`Server responded with status ${response.status}`);
+          }
+          
+          const data = await response.json();
+          console.log("Response received:", data);
+          
+          if (data) {
+            try {
+              const processedData = processWebhookResponse(data);
+              setBusinessIdea(processedData);
+              toast({
+                title: "Succes!",
+                description: "Je business idee is gegenereerd.",
+              });
+              return; // Exit early if successful
+            } catch (processingError) {
+              console.error("Error processing data:", processingError);
+              throw new Error("Onverwacht formaat ontvangen van API");
+            }
+          } else {
+            throw new Error("Unexpected response format");
+          }
+        } catch (corsError) {
+          console.log("CORS error detected, falling back to mock data", corsError);
+          
+          // If we catch a CORS error, show a special toast and use mock data
+          toast({
+            title: "CORS probleem gedetecteerd",
+            description: "We gebruiken demo data omdat de API niet toegankelijk is vanuit deze website.",
+            variant: "destructive",
+          });
+          
+          // Use mock data as fallback for CORS errors
+          setBusinessIdea(mockBusinessIdea);
+          setIsLoading(false);
+          return; // Exit early with mock data
         }
       } else {
-        throw new Error("Unexpected response format");
+        // Original fetch logic for localhost
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`Server responded with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Response received:", data);
+        
+        if (data) {
+          // Process the data safely
+          try {
+            const processedData = processWebhookResponse(data);
+            setBusinessIdea(processedData);
+            toast({
+              title: "Succes!",
+              description: "Je business idee is gegenereerd.",
+            });
+          } catch (processingError) {
+            console.error("Error processing data:", processingError);
+            throw new Error("Onverwacht formaat ontvangen van API");
+          }
+        } else {
+          throw new Error("Unexpected response format");
+        }
       }
     } catch (error: any) {
       clearTimeout(timeoutId);
@@ -183,7 +244,17 @@ const Index: React.FC = () => {
       } else if (error.message.includes("NetworkError") || error.message.includes("Failed to fetch")) {
         errorMessage = "Netwerkfout. Controleer je internetverbinding en probeer het opnieuw.";
       } else if (error.message.includes("CORS")) {
-        errorMessage = "CORS-fout bij het benaderen van de server. Probeer het later opnieuw.";
+        errorMessage = "CORS-fout bij het benaderen van de server. We schakelen over op demo data.";
+        
+        // Use mock data as fallback for CORS errors
+        setBusinessIdea(mockBusinessIdea);
+        toast({
+          title: "Let op",
+          description: "Er was een CORS-probleem met de API, we tonen een voorbeeldidee.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return; // Exit early with mock data
       } else if (error.message.includes("Onverwacht formaat")) {
         errorMessage = "De server stuurde een onverwacht antwoord. Probeer het later opnieuw.";
       }

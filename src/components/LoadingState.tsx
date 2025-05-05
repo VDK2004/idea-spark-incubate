@@ -55,4 +55,3 @@ const LoadingState: React.FC = () => {
 };
 
 export default LoadingState;
-
