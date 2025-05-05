@@ -1,7 +1,20 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const LoadingState: React.FC = () => {
+  const [dots, setDots] = useState("");
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prev => {
+        if (prev.length >= 3) return "";
+        return prev + ".";
+      });
+    }, 500);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center p-10 animate-fade-in-up">
       <div className="mb-6">
@@ -15,7 +28,7 @@ const LoadingState: React.FC = () => {
         </div>
       </div>
       
-      <h3 className="text-xl font-medium mb-2 text-center">AI-agents sparren...</h3>
+      <h3 className="text-xl font-medium mb-2 text-center">AI-agents sparren{dots}</h3>
       
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-4 mt-4">
         <div className="flex items-start mb-4">
@@ -49,7 +62,12 @@ const LoadingState: React.FC = () => {
         </div>
       </div>
       
-      <p className="text-sm text-gray-500 mt-4">Dit kan tot 5 minuten duren...</p>
+      <div className="text-center mt-6">
+        <p className="text-sm text-gray-500 mb-2">Dit kan tot 5 minuten duren...</p>
+        <p className="text-xs text-amber-600 italic">
+          Als er een CORS-probleem optreedt, vallen we automatisch terug op voorbeelddata.
+        </p>
+      </div>
     </div>
   );
 };
